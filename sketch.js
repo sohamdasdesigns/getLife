@@ -4,6 +4,7 @@ let noseX,noseY;
 let reyeX,reyeY;
 let leyeX,leyeY;
 let singlePose,skeleton;
+let shDegrees;
 
 function setup() {  // this function runs only once while running
     createCanvas(windowWidth, windowHeight);
@@ -97,7 +98,18 @@ function draw() { // this function code runs in infinite loop
                 if (stn > 130) {
                     stroke(0, 255, 0);
                 };
-                line(skeleton[j][0].position.x, skeleton[j][0].position.y, skeleton[j][1].position.x, skeleton[j][1].position.y);   
+                line(skeleton[j][0].position.x, skeleton[j][0].position.y, skeleton[j][1].position.x, skeleton[j][1].position.y);  
+                
+                //stroke(255, 255, 255);
+                //strokeWeight(40);
+                //noFill();
+
+                shDegrees = Math.floor(stn / 130 * 90) 
+                textSize(30);
+                text(shDegrees, skeleton[j][1].position.x - 20, skeleton[j][1].position.y - 30);
+                textSize(20);
+                text("o", skeleton[j][1].position.x + 18, skeleton[j][1].position.y - 58);
+
             }
 
 
