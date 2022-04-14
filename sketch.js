@@ -41,7 +41,7 @@ function getRandomArbitrary(min, max) { // generate random num
 */
 
 function draw() { // this function code runs in infinite loop
-    
+    clear();
     // images and video(webcam)
     image(capture, 0, 0);
     
