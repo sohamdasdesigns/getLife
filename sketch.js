@@ -72,8 +72,10 @@ function draw() { // this function code runs in infinite loop
             //console.log(singlePose);
             fill(0, 255, 0);
             
-            //if (singlePose.nose || singlePose.)
-            ellipse(singlePose.keypoints[i].position.x, singlePose.keypoints[i].position.y, 10);
+            if (i != 0 && i != 1 && i != 2 && i != 3 && i != 4 ) {
+            	ellipse(singlePose.keypoints[i].position.x, singlePose.keypoints[i].position.y, 10);
+            	}
+        
         }
 
         
