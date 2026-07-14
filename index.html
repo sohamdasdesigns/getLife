@@ -46,7 +46,16 @@
         <div class="card"><img src="static/prescription.jpg" alt="Prescription"/></div>
         <div class="card"><img src="static/tutorial_1.jpg" alt="Tutorial Success"/></div>
         <div class="card"><img src="static/tutorial_2.jpg" alt="Tutorial In Progress"/></div>
-        <div class="card trainer-card"><div id="trainer-card-wrapper" class="trainer-card-wrapper"></div></div>
+        <div class="card trainer-card">
+          <div id="trainer-card-wrapper" class="trainer-card-wrapper">
+            <div id="trainer-overlay" class="trainer-overlay" aria-hidden="true">
+              <div class="trainer-overlay-inner">
+                <p class="trainer-overlay-text">please, grant camera permission to experience the prototype.</p>
+                <div class="trainer-overlay-actions"><button id="trainer-allow" class="trainer-allow-btn">Allow camera</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <button class="deck-control deck-next" type="button" aria-label="Next card">→</button>
       <button class="deck-control deck-last" type="button" aria-label="Jump to trainer card">Last</button>
@@ -68,6 +77,12 @@
     .card img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
     .trainer-card-wrapper{width:100%;height:100%;position:relative;display:flex;justify-content:center;align-items:center;}
     .trainer-card-wrapper canvas{width:100% !important;height:100% !important;display:block;object-fit:cover;}
+    .trainer-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .trainer-overlay-inner{pointer-events:auto;max-width:84%;background:rgba(255,255,255,0.96);padding:18px 22px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);text-align:center}
+    .trainer-overlay-text{margin:0 0 10px;color:#111;font-size:1rem}
+    .trainer-allow-btn{all:unset;cursor:pointer;padding:6px 10px;border-radius:999px;background:#7b5b3b;color:#fff;font-weight:700;font-size:0.88rem}
+    .trainer-overlay[aria-hidden="true"]{opacity:0;transform:translateY(6px);transition:opacity .18s ease,transform .18s ease}
+    .trainer-overlay[aria-hidden="false"]{opacity:1;transform:none}
     .deck-control{all:unset;cursor:pointer;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.08);box-shadow:0 12px 28px rgba(0,0,0,0.12);display:grid;place-items:center;font-size:1.4rem;font-weight:700;color:#111;transition:transform .2s ease,background .2s ease}
     .deck-control:hover{transform:scale(1.05);background:#fff}
     .deck-control:disabled{opacity:.35;cursor:not-allowed;transform:none}
@@ -86,6 +101,8 @@
       const prevButton = document.querySelector('.deck-prev');
       const nextButton = document.querySelector('.deck-next');
       const lastButton = document.querySelector('.deck-last');
+      const trainerOverlay = document.getElementById('trainer-overlay');
+      const trainerAllow = document.getElementById('trainer-allow');
       let active = 0;
 
       function updateDeck(){
@@ -95,6 +112,14 @@
         prevButton.disabled = active === 0;
         nextButton.disabled = active === cards.length - 1;
         lastButton.disabled = active === cards.length - 1;
+        // show overlay on trainer card and stop camera when leaving
+        if (active === cards.length - 1) {
+          if (trainerOverlay) trainerOverlay.setAttribute('aria-hidden','false');
+          // don't auto-start camera — wait for user to allow
+        } else {
+          if (trainerOverlay) trainerOverlay.setAttribute('aria-hidden','true');
+          if (window.stopTrainer) window.stopTrainer();
+        }
       }
 
       prevButton.addEventListener('click', ()=>{
@@ -103,6 +128,12 @@
       nextButton.addEventListener('click', ()=>{
         if(active < cards.length - 1){ active += 1; updateDeck(); }
       });
+      if (trainerAllow) {
+        trainerAllow.addEventListener('click', ()=>{
+          if (window.startTrainer) window.startTrainer();
+          if (trainerOverlay) trainerOverlay.setAttribute('aria-hidden','true');
+        });
+      }
       lastButton.addEventListener('click', ()=>{
         active = cards.length - 1;
         updateDeck();

@@ -5,36 +5,67 @@ let reyeX,reyeY;
 let leyeX,leyeY;
 let singlePose,skeleton;
 let shDegrees;
+let trainerWrapper;
+let trainerCanvas;
 
 function setup() {  // this function runs only once while running
-    const wrapper = document.getElementById('trainer-card-wrapper');
-    const width = wrapper ? Math.max(1, wrapper.offsetWidth) : windowWidth;
-    const height = wrapper ? Math.max(1, wrapper.offsetHeight) : windowHeight;
-    const canvas = createCanvas(width, height);
-    if (wrapper) {
-        canvas.parent('trainer-card-wrapper');
-        canvas.elt.style.width = '100%';
-        canvas.elt.style.height = '100%';
-        canvas.elt.style.display = 'block';
+    trainerWrapper = document.getElementById('trainer-card-wrapper');
+    const w = trainerWrapper ? Math.max(1, trainerWrapper.offsetWidth) : windowWidth;
+    const h = trainerWrapper ? Math.max(1, trainerWrapper.offsetHeight) : windowHeight;
+    trainerCanvas = createCanvas(w, h);
+    if (trainerWrapper) {
+        trainerCanvas.parent('trainer-card-wrapper');
+        trainerCanvas.elt.style.width = '100%';
+        trainerCanvas.elt.style.height = '100%';
+        trainerCanvas.elt.style.display = 'block';
     }
 
-    capture = createCapture(VIDEO);
-    capture.hide();
-
-    //load the PoseNet model
-    posenet = ml5.poseNet(capture, modelLOADED);
-    //detect pose
-    posenet.on('pose', recievedPoses);
-
+    // Do NOT start camera/pose until explicitly requested via startTrainer().
     window.addEventListener('resize', () => {
-        const w = wrapper ? Math.max(1, wrapper.offsetWidth) : windowWidth;
-        const h = wrapper ? Math.max(1, wrapper.offsetHeight) : windowHeight;
-        resizeCanvas(w, h);
-        if (wrapper) {
-            canvas.elt.style.width = '100%';
-            canvas.elt.style.height = '100%';
+        const nw = trainerWrapper ? Math.max(1, trainerWrapper.offsetWidth) : windowWidth;
+        const nh = trainerWrapper ? Math.max(1, trainerWrapper.offsetHeight) : windowHeight;
+        resizeCanvas(nw, nh);
+        if (trainerWrapper && trainerCanvas) {
+            trainerCanvas.elt.style.width = '100%';
+            trainerCanvas.elt.style.height = '100%';
         }
     });
+
+    // Expose controls to page script
+    window.startTrainer = startTrainer;
+    window.stopTrainer = stopTrainer;
+}
+
+function startTrainer(){
+    if (capture) return; // already running
+    capture = createCapture(VIDEO, () => {});
+    // ensure capture matches canvas size
+    capture.size(width, height);
+    capture.hide();
+
+    // load the PoseNet model and start listening
+    posenet = ml5.poseNet(capture, modelLOADED);
+    posenet.on('pose', recievedPoses);
+}
+
+function stopTrainer(){
+    // stop and remove camera stream
+    if (capture) {
+        try {
+            const stream = capture.elt && capture.elt.srcObject;
+            if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+        } catch(e){}
+        try { capture.remove(); } catch(e){}
+        capture = null;
+    }
+
+    // try to dispose posenet
+    try {
+        if (posenet && posenet.net && posenet.net.dispose) posenet.net.dispose();
+    } catch(e){}
+    posenet = null;
+    singlePose = null;
+    skeleton = null;
 }
 
 function recievedPoses(poses) {
