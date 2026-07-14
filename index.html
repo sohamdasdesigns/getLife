@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>getLife Prototype</title>
+  <link rel="icon" type="image/png" href="static/DA_favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+  <script src="https://unpkg.com/ml5@0.6.0/dist/ml5.min.js"></script>
+  <style>
+    :root{ --paper:#f8f5ef; --ink:#1f1f1f; --line:#d9d3c8; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:EB Garamond, serif;background:var(--paper);color:var(--ink);}
+    /* Title bar (copied from thesis book) */
+    .titlebar{position:fixed;top:0;left:0;width:100%;height:74px;background:rgba(248,245,239,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:100;display:flex;align-items:center}
+    .titlebar-inner{width:100%;padding:0 24px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+    .titlebar-logos{display:flex;align-items:center;gap:18px}
+    .titlebar-logos img{height:26px;width:auto;display:block}
+    .titlebar-logos .da-logo{height:22px}
+    .divider{width:1px;height:28px;background:var(--line);opacity:.6}
+    .titlebar-title{text-align:center;font-weight:600}
+    .titlebar-spacer{justify-self:end}
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-inner">
+      <div class="titlebar-logos">
+        <img src="static/DAlogo_wordmark_transparent_black.png" alt="Domus Academy Milano" class="da-logo"/>
+        <div class="divider"></div>
+        <img src="static/Technogym_Logo_svg.webp" alt="Technogym"/>
+      </div>
+      <div class="titlebar-title">Master's Thesis Project · Experience Design</div>
+      <div class="titlebar-spacer"></div>
+    </div>
+  </div>
+
+  <!-- Prototype content intentionally empty; title bar only -->
+
+  <main>
+    <section class="deck-wrapper">
+      <button class="deck-control deck-prev" type="button" aria-label="Previous card">←</button>
+      <div class="deck" aria-live="polite">
+        <div class="card active"><img src="static/welcome.png" alt="Welcome"/></div>
+        <div class="card"><img src="static/prescription.jpg" alt="Prescription"/></div>
+        <div class="card"><img src="static/tutorial_1.jpg" alt="Tutorial Success"/></div>
+        <div class="card"><img src="static/tutorial_2.jpg" alt="Tutorial In Progress"/></div>
+        <div class="card trainer-card"><div id="trainer-card-wrapper" class="trainer-card-wrapper"></div></div>
+      </div>
+      <button class="deck-control deck-next" type="button" aria-label="Next card">→</button>
+      <button class="deck-control deck-last" type="button" aria-label="Jump to trainer card">Last</button>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <a class="site-link" href="../Thesis_Book/index.html" target="_blank" rel="noopener noreferrer">thesis</a>
+    <a class="site-link" href="https://sohamdasdesigns.github.io/getLifeFlappyBird/" target="_blank" rel="noopener noreferrer">game</a>
+  </footer>
+
+  <style>
+    /* simple deck layout */
+    main{display:flex;align-items:center;justify-content:center;padding:120px 0 60px}
+    .deck-wrapper{display:flex;align-items:center;justify-content:center;gap:20px;width:min(76vw,960px);height:min(60vh,660px);max-height:660px}
+    .deck{position:relative;flex:1;height:100%;max-width:780px}
+    .card{position:absolute;inset:0;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 26px 65px rgba(0,0,0,0.12);opacity:0;transform:scale(0.94);transition:opacity .35s ease,transform .35s ease,box-shadow .35s ease;pointer-events:none}
+    .card.active{opacity:1;transform:scale(1);pointer-events:auto}
+    .card img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+    .trainer-card-wrapper{width:100%;height:100%;position:relative;display:flex;justify-content:center;align-items:center;}
+    .trainer-card-wrapper canvas{width:100% !important;height:100% !important;display:block;object-fit:cover;}
+    .deck-control{all:unset;cursor:pointer;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.08);box-shadow:0 12px 28px rgba(0,0,0,0.12);display:grid;place-items:center;font-size:1.4rem;font-weight:700;color:#111;transition:transform .2s ease,background .2s ease}
+    .deck-control:hover{transform:scale(1.05);background:#fff}
+    .deck-control:disabled{opacity:.35;cursor:not-allowed;transform:none}
+    .deck-wrapper{position:relative}
+    .deck-last{position:absolute;bottom:18px;right:18px;z-index:2;width:auto;min-width:82px;padding:0 14px;height:42px;border-radius:999px;font-size:.95rem;font-weight:700;}
+    .page-footer{display:flex;justify-content:center;gap:14px;margin:24px auto 36px;max-width:760px;padding:0 20px}
+    .site-link{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:140px;height:46px;border-radius:999px;background:#7b5b3b;color:#fff;font-size:0.96rem;font-weight:700;text-transform:none;text-decoration:none;box-shadow:0 14px 30px rgba(0,0,0,0.16);transition:transform .2s ease,background .2s ease}
+    .site-link:hover{transform:translateY(-1px);background:#664a35}
+    @media(max-width:900px){.deck-wrapper{gap:14px;width:min(92vw,900px);height:min(64vh,680px)}}
+    @media(max-width:700px){main{padding-top:140px}.deck-wrapper{flex-direction:column;gap:18px;height:auto}.deck{max-width:100%}.deck-control{width:50px;height:50px}}
+  </style>
+
+  <script>
+    (function(){
+      const cards = Array.from(document.querySelectorAll('.deck .card'));
+      const prevButton = document.querySelector('.deck-prev');
+      const nextButton = document.querySelector('.deck-next');
+      const lastButton = document.querySelector('.deck-last');
+      let active = 0;
+
+      function updateDeck(){
+        cards.forEach((card, index)=>{
+          card.classList.toggle('active', index === active);
+        });
+        prevButton.disabled = active === 0;
+        nextButton.disabled = active === cards.length - 1;
+        lastButton.disabled = active === cards.length - 1;
+      }
+
+      prevButton.addEventListener('click', ()=>{
+        if(active > 0){ active -= 1; updateDeck(); }
+      });
+      nextButton.addEventListener('click', ()=>{
+        if(active < cards.length - 1){ active += 1; updateDeck(); }
+      });
+      lastButton.addEventListener('click', ()=>{
+        active = cards.length - 1;
+        updateDeck();
+      });
+      window.addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowLeft'){ prevButton.click(); }
+        if(e.key === 'ArrowRight'){ nextButton.click(); }
+      });
+
+      updateDeck();
+    })();
+  </script>
+  <script src="sketch.js"></script>
+</body>
+</html>
